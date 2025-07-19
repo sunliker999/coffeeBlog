@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>咖啡館部落格</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 咖啡館配色設計 */
+        :root {
+            --coffee: #6f4e37;
+            --deep-coffee: #4b2e1e;
+            --milk: #f3e9e3;
+            --caramel: #b98a59;
+            --latte: #ece8e1;
+            --green: #4c5946;
+            --shadow: 0 6px 26px rgba(111, 78, 55, 0.09);
+            --transition: all 0.3s cubic-bezier(.68,-0.55,.27,1.55);
+        }
+        body {
+            font-family: 'Noto Serif TC', 'Lora', 'Merriweather', serif;
+            background: linear-gradient(135deg, var(--milk) 0%, var(--latte) 100%);
+            color: var(--deep-coffee);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 30px 15px;
+        }
+        header {
+            text-align: center;
+            padding: 48px 0 30px;
+        }
+        h1 {
+            font-size: 3.3rem;
+            color: var(--coffee);
+            font-family: 'Merriweather', serif;
+            font-weight: bold;
+            margin-bottom: 18px;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 8px rgba(111,78,55,0.13);
+        }
+        .subtitle {
+            font-size: 1.22rem;
+            color: var(--caramel);
+            background: rgba(185, 138, 89, 0.08);
+            display: inline-block;
+            padding: 12px 30px;
+            border-radius: 23px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 12px rgba(185,138,89,0.07);
+        }
+        .controls {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 37px;
+            justify-content: space-between;
+        }
+        .stats-card {
+            background: #fff;
+            padding: 22px 32px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            min-width: 210px;
+            transition: box-shadow .22s;
+        }
+        .stats-card:hover {
+            box-shadow: 0 18px 48px rgba(111,78,55,0.18);
+        }
+        .stats-icon {
+            background: linear-gradient(135deg, var(--caramel), var(--coffee));
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.65rem;
+            margin-right: 18px;
+            box-shadow: 0 4px 24px rgba(111,78,55,0.16);
+        }
+        .stats-text h3 {
+            font-size: 1.06rem;
+            color: var(--green);
+            margin-bottom: 5px;
+        }
+        .stats-text p {
+            font-size: 1.55rem;
+            font-weight: bold;
+            color: var(--coffee);
+            margin-bottom: 0;
+        }
+        .btn {
+            background: linear-gradient(90deg, var(--caramel) 30%, var(--coffee) 100%);
+            color: #fff;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 11px;
+            font-size: 1.17rem;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 16px rgba(111,78,55,0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Merriweather', serif;
+        }
+        .btn:hover {
+            background: linear-gradient(90deg, var(--coffee) 0%, var(--caramel) 100%);
+            transform: translateY(-2px) scale(1.04);
+            box-shadow: 0 8px 28px rgba(111,78,55,0.22);
+        }
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 32px;
+            margin-top: 18px;
+        }
+        .card {
+            background: linear-gradient(135deg, #fff 70%, var(--milk) 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border: 2px solid var(--latte);
+            position: relative;
+        }
+        .card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 22px 48px rgba(111,78,55,0.18);
+            border-color: var(--caramel);
+        }
+        .card-header {
+            padding: 28px 22px 18px;
+            background: linear-gradient(135deg, var(--coffee), var(--caramel) 70%);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            border-bottom: 1px solid var(--latte);
+            position: relative;
+        }
+        /* 配圖icon在卡片header右上角 */
+        .card-header .coffee-icon {
+            position: absolute;
+            top: 18px;
+            right: 16px;
+            font-size: 2.1rem;
+            opacity: 0.14;
+        }
+        .card-title {
+            font-size: 1.46rem;
+            font-weight: 600;
+            margin-bottom: 7px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-date {
+            font-size: 0.97rem;
+            opacity: 0.85;
+            text-align: right;
+            padding-right: 3px;
+        }
+        .card-content {
+            padding: 28px 22px;
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            max-height: 280px;
+            font-size: 1.09rem;
+            color: var(--deep-coffee);
+            background: var(--milk);
+            border-top: 1px solid var(--latte);
+            transition: all 0.25s;
+        }
+        .card-content p {
+            margin-bottom: 14px;
+        }
+        .card.expanded .card-content {
+            display: block;
+            animation: fadeIn 0.36s ease;
+        }
+        .card.expanded .fa-chevron-down {
+            display: none;
+        }
+        .card.expanded .fa-chevron-up {
+            display: inline-block;
+        }
+        .add-post-form {
+            background: #fff;
+            padding: 36px 30px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            margin-top: 40px;
+            display: none;
+        }
+        .add-post-form.active {
+            display: block;
+            animation: fadeIn 0.38s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(18px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .form-title {
+            font-size: 1.8rem;
+            color: var(--coffee);
+            margin-bottom: 22px;
+            text-align: center;
+            font-family: 'Merriweather', serif;
+        }
+        .form-group {
+            margin-bottom: 21px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 600;
+            color: var(--caramel);
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 13px;
+            border: 1.5px solid #b98a59;
+            border-radius: 9px;
+            font-size: 1.07rem;
+            transition: border 0.18s, box-shadow 0.18s;
+            background: #fff6ee;
+            font-family: 'Noto Serif TC', serif;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--coffee);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(185,138,89,0.18);
+        }
+        .form-group textarea {
+            min-height: 170px;
+            resize: vertical;
+        }
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 22px;
+            justify-content: center;
+        }
+        .btn-secondary {
+            background: linear-gradient(90deg, #b98a59 80%, #ece8e1 100%);
+            color: var(--deep-coffee);
+        }
+        .btn-secondary:hover {
+            background: linear-gradient(90deg, #ece8e1 0%, #b98a59 100%);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            grid-column: 1 / -1;
+            background: var(--latte);
+            border-radius: 20px;
+            box-shadow: 0 2px 18px rgba(111,78,55,0.06);
+        }
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--caramel);
+            margin-bottom: 16px;
+        }
+        .empty-state h2 {
+            font-size: 2rem;
+            margin-bottom: 13px;
+            color: var(--coffee);
+        }
+        .empty-state p {
+            font-size: 1.19rem;
+            color: var(--caramel);
+            max-width: 600px;
+            margin: 0 auto 28px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--caramel);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(111,78,55,0.19);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 1000;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        @media (max-width: 980px) {
+            .container { padding: 15px; }
+            .stats-card { min-width: 140px; padding: 15px 10px;}
+            .posts-grid { gap: 20px;}
+        }
+        @media (max-width: 720px) {
+            h1 { font-size: 2.1rem;}
+            .controls { flex-direction: column; gap: 16px;}
+            .posts-grid { grid-template-columns: 1fr;}
+            .add-post-form { padding: 20px 8px;}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-mug-hot"></i> 咖啡館部落格</h1>
+            <p class="subtitle">分享咖啡館體驗、咖啡知識與美照。部落格資料只存放於您的瀏覽器本地端，隱私安全。</p>
+        </header>
+        <div class="controls">
+            <div class="stats-card">
+                <div class="stats-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div class="stats-text">
+                    <h3>資料庫狀態</h3>
+                    <p id="db-status">IndexedDB已啟用</p>
+                </div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-icon">
+                    <i class="fas fa-coffee"></i>
+                </div>
+                <div class="stats-text">
+                    <h3>文章數量</h3>
+                    <p id="post-count">0</p>
+                </div>
+            </div>
+            <button id="add-post-btn" class="btn">
+                <i class="fas fa-plus"></i> 新增文章
+            </button>
+        </div>
+        <div class="add-post-form" id="post-form">
+            <h2 class="form-title">撰寫新文章</h2>
+            <div class="form-group">
+                <label for="post-title">標題</label>
+                <input type="text" id="post-title" placeholder="請輸入文章標題..." required>
+            </div>
+            <div class="form-group">
+                <label for="post-content">內容</label>
+                <textarea id="post-content" placeholder="請輸入文章內容..." required></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="button" id="cancel-btn" class="btn btn-secondary">取消</button>
+                <button type="button" id="save-post-btn" class="btn">儲存文章</button>
+            </div>
+        </div>
+        <div class="posts-grid" id="posts-container">
+            <!-- JS動態生成文章卡片 -->
+        </div>
+    </div>
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toast-message">操作成功！</span>
+    </div>
+    <script>
+        // JS與你的原始碼一致
+        // 文章卡片的HTML結構加上 <i class="fas fa-mug-hot coffee-icon"></i>
+        function renderPosts(posts) {
+            posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+            postsContainer.innerHTML = '';
+            posts.forEach(post => {
+                const date = new Date(post.date).toLocaleDateString('zh-TW', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-title">
+                            ${post.title}
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="card-date">${date}</div>
+                        <i class="fas fa-mug-hot coffee-icon"></i>
+                    </div>
+                    <div class="card-content">
+                        ${post.content.replace(/\n/g, '<br>')}
+                    </div>
+                `;
+                card.querySelector('.card-header').addEventListener('click', () => {
+                    card.classList.toggle('expanded');
+                    const icon = card.querySelector('.fa-chevron-down');
+                    if (card.classList.contains('expanded')) {
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-up');
+                    } else {
+                        icon.classList.remove('fa-chevron-up');
+                        icon.classList.add('fa-chevron-down');
+                    }
+                });
+                postsContainer.appendChild(card);
+            });
+        }
+        // 其它 JS與你的原始碼一致
+    </script>
+    <script>
+    // 数据库和DOM元素引用
+    let db;
+    const DB_NAME = 'BlogDB';
+    const STORE_NAME = 'posts';
+    const DB_VERSION = 1;
+    
+    const postsContainer = document.getElementById('posts-container');
+    const postCountElement = document.getElementById('post-count');
+    const addPostBtn = document.getElementById('add-post-btn');
+    const postForm = document.getElementById('post-form');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const savePostBtn = document.getElementById('save-post-btn');
+    const postTitle = document.getElementById('post-title');
+    const postContent = document.getElementById('post-content');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    
+    // 初始化数据库
+    function initDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            
+            request.onerror = (event) => {
+                console.error('数据库打开失败:', event.target.error);
+                showToast('数据库初始化失败，请检查浏览器支持', 'error');
+                reject(event.target.error);
+            };
+            
+            request.onsuccess = (event) => {
+                db = event.target.result;
+                showToast('数据库连接成功！');
+                resolve(db);
+                loadPosts();
+            };
+            
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    const store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                    store.createIndex('title', 'title', { unique: false });
+                    store.createIndex('date', 'date', { unique: false });
+                    console.log('对象存储创建成功');
+                }
+            };
+        });
+    }
+    
+    // 添加新文章
+    function addPost(post) {
+        return new Promise((resolve, reject) => {
+            if (!db) {
+                reject('数据库未初始化');
+                return;
+            }
+            
+            const tx = db.transaction(STORE_NAME, 'readwrite');
+            const store = tx.objectStore(STORE_NAME);
+            
+            // 添加日期
+            post.date = new Date().toISOString();
+            
+            const request = store.add(post);
+            
+            request.onsuccess = () => {
+                resolve(request.result);
+                showToast('文章已成功保存！');
+            };
+            
+            request.onerror = (event) => {
+                reject(event.target.error);
+                showToast('保存文章失败: ' + event.target.error, 'error');
+            };
+        });
+    }
+    
+    // 获取所有文章
+    function getAllPosts() {
+        return new Promise((resolve, reject) => {
+            if (!db) {
+                reject('数据库未初始化');
+                return;
+            }
+            
+            const tx = db.transaction(STORE_NAME, 'readonly');
+            const store = tx.objectStore(STORE_NAME);
+            const request = store.getAll();
+            
+            request.onsuccess = () => {
+                resolve(request.result);
+            };
+            
+            request.onerror = (event) => {
+                reject(event.target.error);
+                showToast('加载文章失败: ' + event.target.error, 'error');
+            };
+        });
+    }
+    
+    // 加载并显示文章
+    async function loadPosts() {
+        try {
+            const posts = await getAllPosts();
+            renderPosts(posts);
+            postCountElement.textContent = posts.length;
+            
+            // 如果没有文章，显示空状态
+            if (posts.length === 0) {
+                postsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-file-alt"></i>
+                        <h2>还没有文章</h2>
+                        <p>点击"添加新文章"按钮开始撰写您的第一篇博客</p>
+                        <button id="add-first-post" class="btn">
+                            <i class="fas fa-plus"></i> 创建第一篇文章
+                        </button>
+                    </div>
+                `;
+                
+                document.getElementById('add-first-post').addEventListener('click', () => {
+                    postForm.classList.add('active');
+                });
+            }
+        } catch (error) {
+            console.error('加载文章失败:', error);
+        }
+    }
+    
+    // 渲染文章卡片
+    function renderPosts(posts) {
+        // 按日期降序排序
+        posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        postsContainer.innerHTML = '';
+        
+        posts.forEach(post => {
+            const date = new Date(post.date).toLocaleDateString('zh-TW', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="card-title">
+                        ${post.title}
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="card-date">${date}</div>
+                </div>
+                <div class="card-content">
+                    ${post.content.replace(/\n/g, '<br>')}
+                </div>
+            `;
+            
+            // 添加点击事件切换展开状态
+            card.querySelector('.card-header').addEventListener('click', () => {
+                card.classList.toggle('expanded');
+                const icon = card.querySelector('.fa-chevron-down');
+                if (card.classList.contains('expanded')) {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                } else {
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                }
+            });
+            
+            postsContainer.appendChild(card);
+        });
+    }
+    
+    // 显示Toast通知
+    function showToast(message, type = 'success') {
+        toastMessage.textContent = message;
+        toast.className = 'toast show';
+        
+        if (type === 'error') {
+            toast.style.background = '#e63946';
+            toast.querySelector('i').className = 'fas fa-exclamation-circle';
+        } else {
+            // 修复了这里的语法错误
+            toast.style.background = '#4cc9f0'; // 直接使用颜色值代替CSS变量
+            toast.querySelector('i').className = 'fas fa-check-circle';
+        }
+        
+        setTimeout(() => {
+            toast.className = 'toast';
+        }, 3000);
+    }
+    
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            await initDB();
+        } catch (error) {
+            console.error('初始化失败:', error);
+        }
+        
+        // 事件监听
+        addPostBtn.addEventListener('click', () => {
+            postForm.classList.toggle('active');
+        });
+        
+        cancelBtn.addEventListener('click', () => {
+            postForm.classList.remove('active');
+            postTitle.value = '';
+            postContent.value = '';
+        });
+        
+        savePostBtn.addEventListener('click', async () => {
+            const title = postTitle.value.trim();
+            const content = postContent.value.trim();
+            
+            if (!title || !content) {
+                showToast('标题和内容不能为空', 'error');
+                return;
+            }
+            
+            try {
+                await addPost({ title, content });
+                postForm.classList.remove('active');
+                postTitle.value = '';
+                postContent.value = '';
+                await loadPosts();
+            } catch (error) {
+                console.error('保存失败:', error);
+            }
+        });
+    });
+    
+    // 检查IndexedDB支持
+    if (!window.indexedDB) {
+        document.body.innerHTML = `
+            <div class="container" style="text-align: center; padding: 50px;">
+                <h1 style="color: #e63946;">浏览器不支持</h1>
+                <p style="font-size: 1.2rem; margin: 20px 0;">
+                    您的浏览器不支持IndexedDB，无法使用此应用。<br>
+                    请使用现代浏览器如Chrome、Firefox、Edge等。
+                </p>
+                <div style="margin-top: 30px; font-size: 5rem; color: #e63946;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+            </div>
+        `;
+    }
+</script>
+</body>
+</html>
