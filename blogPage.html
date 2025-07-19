@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IndexedDB博客系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            color: var(--secondary);
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #6c757d;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stats-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            flex: 1;
+            min-width: 250px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .stats-icon {
+            background: var(--accent);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .stats-text h3 {
+            font-size: 1.2rem;
+            color: var(--secondary);
+            margin-bottom: 5px;
+        }
+        
+        .stats-text p {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+        
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            padding: 25px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            cursor: pointer;
+        }
+        
+        .card-title {
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-date {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .card-content {
+            padding: 25px;
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+        
+        .card-content p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            color: #495057;
+        }
+        
+        .card.expanded .card-content {
+            display: block;
+        }
+        
+        .card.expanded .card-header {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .add-post-form {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--card-shadow);
+            margin-top: 40px;
+            display: none;
+        }
+        
+        .add-post-form.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-title {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            grid-column: 1 / -1;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+        
+        .empty-state h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: var(--secondary);
+        }
+        
+        .empty-state p {
+            font-size: 1.2rem;
+            color: #6c757d;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--success);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            .posts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-book-open"></i> IndexedDB博客系统</h1>
+            <p class="subtitle">使用浏览器内置数据库存储文章，点击卡片展开阅读全文。所有数据都存储在您的浏览器中。</p>
+        </header>
+        
+        <div class="controls">
+            <div class="stats-card">
+                <div class="stats-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div class="stats-text">
+                    <h3>数据存储</h3>
+                    <p id="db-status">IndexedDB已启用</p>
+                </div>
+            </div>
+            
+            <div class="stats-card">
+                <div class="stats-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stats-text">
+                    <h3>文章总数</h3>
+                    <p id="post-count">0</p>
+                </div>
+            </div>
+            
+            <button id="add-post-btn" class="btn">
+                <i class="fas fa-plus"></i> 添加新文章
+            </button>
+        </div>
+        
+        <div class="add-post-form" id="post-form">
+            <h2 class="form-title">撰写新文章</h2>
+            <div class="form-group">
+                <label for="post-title">标题</label>
+                <input type="text" id="post-title" placeholder="输入文章标题..." required>
+            </div>
+            <div class="form-group">
+                <label for="post-content">内容</label>
+                <textarea id="post-content" placeholder="输入文章内容..." required></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="button" id="cancel-btn" class="btn btn-secondary">取消</button>
+                <button type="button" id="save-post-btn" class="btn">保存文章</button>
+            </div>
+        </div>
+        
+        <div class="posts-grid" id="posts-container">
+            <!-- 文章卡片将通过JS动态生成 -->
+        </div>
+    </div>
+    
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toast-message">操作成功！</span>
+    </div>
+
+    <script>
+        // 数据库和DOM元素引用
+        let db;
+        const DB_NAME = 'BlogDB';
+        const STORE_NAME = 'posts';
+        const DB_VERSION = 1;
+        
+        const postsContainer = document.getElementById('posts-container');
+        const postCountElement = document.getElementById('post-count');
+        const addPostBtn = document.getElementById('add-post-btn');
+        const postForm = document.getElementById('post-form');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const savePostBtn = document.getElementById('save-post-btn');
+        const postTitle = document.getElementById('post-title');
+        const postContent = document.getElementById('post-content');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+        
+        // 初始化数据库
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = (event) => {
+                    console.error('数据库打开失败:', event.target.error);
+                    showToast('数据库初始化失败，请检查浏览器支持', 'error');
+                    reject(event.target.error);
+                };
+                
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    showToast('数据库连接成功！');
+                    resolve(db);
+                    loadPosts();
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                        store.createIndex('title', 'title', { unique: false });
+                        store.createIndex('date', 'date', { unique: false });
+                        console.log('对象存储创建成功');
+                    }
+                };
+            });
+        }
+        
+        // 添加新文章
+        function addPost(post) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject('数据库未初始化');
+                    return;
+                }
+                
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                
+                // 添加日期
+                post.date = new Date().toISOString();
+                
+                const request = store.add(post);
+                
+                request.onsuccess = () => {
+                    resolve(request.result);
+                    showToast('文章已成功保存！');
+                };
+                
+                request.onerror = (event) => {
+                    reject(event.target.error);
+                    showToast('保存文章失败: ' + event.target.error, 'error');
+                };
+            });
+        }
+        
+        // 获取所有文章
+        function getAllPosts() {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject('数据库未初始化');
+                    return;
+                }
+                
+                const tx = db.transaction(STORE_NAME, 'readonly');
+                const store = tx.objectStore(STORE_NAME);
+                const request = store.getAll();
+                
+                request.onsuccess = () => {
+                    resolve(request.result);
+                };
+                
+                request.onerror = (event) => {
+                    reject(event.target.error);
+                    showToast('加载文章失败: ' + event.target.error, 'error');
+                };
+            });
+        }
+        
+        // 加载并显示文章
+        async function loadPosts() {
+            try {
+                const posts = await getAllPosts();
+                renderPosts(posts);
+                postCountElement.textContent = posts.length;
+                
+                // 如果没有文章，显示空状态
+                if (posts.length === 0) {
+                    postsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-file-alt"></i>
+                            <h2>还没有文章</h2>
+                            <p>点击"添加新文章"按钮开始撰写您的第一篇博客</p>
+                            <button id="add-first-post" class="btn">
+                                <i class="fas fa-plus"></i> 创建第一篇文章
+                            </button>
+                        </div>
+                    `;
+                    
+                    document.getElementById('add-first-post').addEventListener('click', () => {
+                        postForm.classList.add('active');
+                    });
+                }
+            } catch (error) {
+                console.error('加载文章失败:', error);
+            }
+        }
+        
+        // 渲染文章卡片
+        function renderPosts(posts) {
+            // 按日期降序排序
+            posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            postsContainer.innerHTML = '';
+            
+            posts.forEach(post => {
+                const date = new Date(post.date).toLocaleDateString('zh-TW', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-title">
+                            ${post.title}
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="card-date">${date}</div>
+                    </div>
+                    <div class="card-content">
+                        ${post.content.replace(/\n/g, '<br>')}
+                    </div>
+                `;
+                
+                // 添加点击事件切换展开状态
+                card.querySelector('.card-header').addEventListener('click', () => {
+                    card.classList.toggle('expanded');
+                    const icon = card.querySelector('.fa-chevron-down');
+                    if (card.classList.contains('expanded')) {
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-up');
+                    } else {
+                        icon.classList.remove('fa-chevron-up');
+                        icon.classList.add('fa-chevron-down');
+                    }
+                });
+                
+                postsContainer.appendChild(card);
+            });
+        }
+        
+        // 显示Toast通知
+        function showToast(message, type = 'success') {
+            toastMessage.textContent = message;
+            toast.className = 'toast show';
+            
+            if (type === 'error') {
+                toast.style.background = '#e63946';
+                toast.querySelector('i').className = 'fas fa-exclamation-circle';
+            } else {
+                // 修复了这里的语法错误
+                toast.style.background = '#4cc9f0'; // 直接使用颜色值代替CSS变量
+                toast.querySelector('i').className = 'fas fa-check-circle';
+            }
+            
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
+        }
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await initDB();
+            } catch (error) {
+                console.error('初始化失败:', error);
+            }
+            
+            // 事件监听
+            addPostBtn.addEventListener('click', () => {
+                postForm.classList.toggle('active');
+            });
+            
+            cancelBtn.addEventListener('click', () => {
+                postForm.classList.remove('active');
+                postTitle.value = '';
+                postContent.value = '';
+            });
+            
+            savePostBtn.addEventListener('click', async () => {
+                const title = postTitle.value.trim();
+                const content = postContent.value.trim();
+                
+                if (!title || !content) {
+                    showToast('标题和内容不能为空', 'error');
+                    return;
+                }
+                
+                try {
+                    await addPost({ title, content });
+                    postForm.classList.remove('active');
+                    postTitle.value = '';
+                    postContent.value = '';
+                    await loadPosts();
+                } catch (error) {
+                    console.error('保存失败:', error);
+                }
+            });
+        });
+        
+        // 检查IndexedDB支持
+        if (!window.indexedDB) {
+            document.body.innerHTML = `
+                <div class="container" style="text-align: center; padding: 50px;">
+                    <h1 style="color: #e63946;">浏览器不支持</h1>
+                    <p style="font-size: 1.2rem; margin: 20px 0;">
+                        您的浏览器不支持IndexedDB，无法使用此应用。<br>
+                        请使用现代浏览器如Chrome、Firefox、Edge等。
+                    </p>
+                    <div style="margin-top: 30px; font-size: 5rem; color: #e63946;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
